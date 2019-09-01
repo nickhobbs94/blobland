@@ -82,7 +82,7 @@ class EnergyZone {
 function energyDistribution(blob, energyZones) {
   for (const zone of energyZones) {
     if (zone.contains(blob.x, blob.y)){
-      console.log(blob.x, blob.y, zone.x, zone.y, zone.radius)
+      //console.log(blob.x, blob.y, zone.x, zone.y, zone.radius)
       return 20
     }
   }
