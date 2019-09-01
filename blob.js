@@ -71,11 +71,18 @@ class EnergyZone {
   contains(x,y) {
     return (dist(x, y, this.x, this.y) < this.radius)
   }
+  draw(r,g,b,alpha) {
+    let c = color(r, g, b, alpha);
+    fill(c);
+    noStroke();
+    circle(this.x, this.y, this.radius * 2);
+  }
 }
 
 function energyDistribution(blob, energyZones) {
   for (const zone of energyZones) {
     if (zone.contains(blob.x, blob.y)){
+      console.log(blob.x, blob.y, zone.x, zone.y, zone.radius)
       return 20
     }
   }
@@ -243,7 +250,7 @@ energyZones = []
 
 function setup() {
   frameRate(30);
-  var canvas = createCanvas(500, 500);
+  var canvas = createCanvas(AREA_RIGHT_MAX, AREA_DOWN_MAX);
   canvas.parent('canvas');
   all_blobs = generate_our_blobbly_boys()
   energyZones.push(
@@ -255,7 +262,7 @@ function draw_blob(blob) {
   let c = color(blob.color.r, blob.color.g, blob.color.b);
   fill(c);
   noStroke();
-  circle(blob.x, blob.y, 5, 5);
+  circle(blob.x, blob.y, 5);
 }
 
 function draw() {
@@ -269,6 +276,7 @@ function draw() {
       all_blobs = all_blobs.filter(b => b.id != blob.id)
     }
   }
-
-
+  for (let zone of energyZones){
+    zone.draw(0,255,255,100);
+  }
 }
