@@ -61,6 +61,18 @@ class Blob {
     this.reverse = false
     this.color = {r: 0, g: 0, b: 0}
   }
+  summary() {
+    return ("X: " + this.x + ", Y: " + this.y + ", Energy: " + this.energy 
+      + ", Current Instructions: " 
+      + this.instructions[this.counter-4][0] + " "
+      + this.instructions[this.counter-3][0] + " "
+      + this.instructions[this.counter-2][0] + " "
+      + this.instructions[this.counter-1][0] + " _"
+      + this.instructions[this.counter][0] + "_ "
+      + this.instructions[this.counter+1][0] + " "
+      + this.instructions[this.counter+2][0] + " "
+      )
+  }
 }
 
 class EnergyZone {
@@ -272,6 +284,14 @@ function squish(blob, all_blobs) {
       otherBlob.y += 0.5 * (otherBlob.y - blob.y)
       blob.x -= 0.5 * (otherBlob.x - blob.x)
       blob.y -= 0.5 * (otherBlob.y - blob.y)
+    }
+  }
+}
+
+function mouseClicked() {
+  for (let blob of all_blobs) {
+    if (dist(blob.x, blob.y, mouseX, mouseY) < 8) {
+      document.getElementById("blobinfo").innerHTML = blob.summary();
     }
   }
 }
