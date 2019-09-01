@@ -2,6 +2,7 @@ let AREA_LEFT_MAX = 0
 let AREA_RIGHT_MAX = 500
 let AREA_UP_MAX = 0
 let AREA_DOWN_MAX = 500
+let MAX_BLOBS = 1000
 
 
 let UMOVE = ["UMOVE", 1]
@@ -82,7 +83,6 @@ class EnergyZone {
 function energyDistribution(blob, energyZones) {
   for (const zone of energyZones) {
     if (zone.contains(blob.x, blob.y)){
-      //console.log(blob.x, blob.y, zone.x, zone.y, zone.radius)
       return 20
     }
   }
@@ -265,14 +265,26 @@ function draw_blob(blob) {
   circle(blob.x, blob.y, 5);
 }
 
+function squish(blob, all_blobs) {
+  for (let otherBlob of all_blobs) {
+    if (dist(otherBlob.x,otherBlob.y,blob.x,blob.y) < 1) {
+      otherBlob.x += 0.5 * (otherBlob.x - blob.x)
+      otherBlob.y += 0.5 * (otherBlob.y - blob.y)
+      blob.x -= 0.5 * (otherBlob.x - blob.x)
+      blob.y -= 0.5 * (otherBlob.y - blob.y)
+    }
+  }
+}
+
 function draw() {
   background(0, 0, 0);
 
   for (let blob of all_blobs) {
     step(blob, all_blobs, energyZones)
+    //squish(blob, all_blobs)
     draw_blob(blob)
 
-    if (blob.energy <= 0) {
+    if (blob.energy <= 0 || all_blobs.length > MAX_BLOBS) {
       all_blobs = all_blobs.filter(b => b.id != blob.id)
     }
   }
