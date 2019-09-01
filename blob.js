@@ -126,6 +126,16 @@ function generate_our_blobbly_boys() {
 
 }
 
+function generate_our_zones(n) {
+  newZones = []
+  for (let i=0; i<n; i++) {
+    newZones.push(
+      new EnergyZone(randint(100,400), randint(100,400), randint(10,100))
+    )
+  }
+  return newZones
+}
+
 function mutate(instructions) {
 
   let new_instructions = []
@@ -205,7 +215,17 @@ function step(blob, all_blobs, energyZones) {
     reproduce(blob, all_blobs, 1000)
   }
   break;
-  case DETECT[0]: {}
+  case DETECT[0]: {
+    for (let zone of energyZones) {
+      if (zone.contains(blob)) {
+        if (blob.reverse) {
+          blob.counter -= 1
+        } else {
+          blob.counter += 1
+        }
+      }
+    }
+  }
   break;
   case U1JUMP[0]: {
     blob.counter -= 1
@@ -265,9 +285,7 @@ function setup() {
   var canvas = createCanvas(AREA_RIGHT_MAX, AREA_DOWN_MAX);
   canvas.parent('canvas');
   all_blobs = generate_our_blobbly_boys()
-  energyZones.push(
-    new EnergyZone(250, 250, 100)
-  )
+  energyZones = generate_our_zones(5)
 }
 
 function draw_blob(blob) {
@@ -290,11 +308,13 @@ function squish(blob, all_blobs) {
 
 function mouseClicked() {
   for (let blob of all_blobs) {
-    if (dist(blob.x, blob.y, mouseX, mouseY) < 8) {
+    if (dist(blob.x, blob.y, mouseX, mouseY) < 10) {
       document.getElementById("blobinfo").innerHTML = blob.summary();
     }
   }
 }
+
+let cycleCount = 0
 
 function draw() {
   background(0, 0, 0);
@@ -310,5 +330,11 @@ function draw() {
   }
   for (let zone of energyZones){
     zone.draw(0,255,255,100);
+  }
+
+  cycleCount += 1
+  if (cycleCount > 100) {
+    cycleCount = 0
+    energyZones = generate_our_zones(5)
   }
 }
