@@ -5,45 +5,54 @@ let AREA_DOWN_MAX = 500
 let MAX_BLOBS = 1000
 
 
+let CONVERT = ["CONVERT", 0]
+let REPRODUCE = ["REPRODUCE", 4]
+let NOP = ["NOP", 0]
+let DETECT = ["DETECT", 1]
+let U1JUMP = ["U1JUMP", 1]
+let U2JUMP = ["U2JUMP", 1]
+let U3JUMP = ["U3JUMP", 1]
+let U4JUMP = ["U4JUMP", 1]
+let D1JUMP = ["D1JUMP", 1]
+let D2JUMP = ["D2JUMP", 1]
+let D3JUMP = ["D3JUMP", 1]
+let D4JUMP = ["D4JUMP", 1]
+let TOP = ["TOP", 1]
+let REVERSE = ["REVERSE", 1]
+
+// Inputs
+let IN_ENERGY_ZONE = "IN_ENERGY_ZONE"
+
+let all_inputs = [
+  IN_ENERGY_ZONE
+]
+
+// Instructions
 let UMOVE = ["UMOVE", 1]
 let DMOVE = ["DMOVE", 1]
 let LMOVE = ["LMOVE", 1]
 let RMOVE = ["RMOVE", 1]
-let CONVERT = ["CONVERT", 0]
-let REPRODUCE = ["REPRODUCE", 4]
-let NOP = ["NOP", 0]
-let DETECT = ["DETECT", 0]
-let U1JUMP = ["U1JUMP", 0]
-let U2JUMP = ["U2JUMP", 0]
-let U3JUMP = ["U3JUMP", 0]
-let U4JUMP = ["U4JUMP", 0]
-let D1JUMP = ["D1JUMP", 0]
-let D2JUMP = ["D2JUMP", 0]
-let D3JUMP = ["D3JUMP", 0]
-let D4JUMP = ["D4JUMP", 0]
-let TOP = ["TOP", 0]
-let REVERSE = ["REVERSE", 0]
 
+// Configuration
+let M_CONFIG = {
+  name: "M_CONFIG",
+  configs: [
+    {
+      input: IN_ENERGY_ZONE,
+      operations: [UMOVE, UMOVE, LMOVE],
+    }
+  ]
+}
 
 let = all_instructions = [
   UMOVE,
   DMOVE,
   LMOVE,
   RMOVE,
-  CONVERT,
-  REPRODUCE,
-  NOP,
-  DETECT,
-  U1JUMP,
   U2JUMP,
-  U3JUMP,
-  U4JUMP,
-  D1JUMP,
   D2JUMP,
-  D3JUMP,
-  D4JUMP,
-  TOP,
-  REVERSE
+  NOP,
+  DETECT
 ]
 
 function randint(min, max) {
@@ -72,6 +81,13 @@ class Blob {
       + this.instructions[this.counter+1][0] + " "
       + this.instructions[this.counter+2][0] + " "
       )
+  }
+  getInputs(energyZones) {
+    let inEnergyZone = false;
+    for(let zone of energyZones) {
+      if (!inEnergyZone) inEnergyZone = zone.contains(this.x, this.y);
+    }
+    return [inEnergyZone]
   }
 }
 
@@ -108,7 +124,7 @@ function generate_our_blobbly_boys() {
     let the_only_blob = new Blob()
     the_only_blob.x = randint(AREA_LEFT_MAX, AREA_RIGHT_MAX)
     the_only_blob.y = randint(AREA_UP_MAX, AREA_DOWN_MAX)
-    the_only_blob.energy = 400
+    the_only_blob.energy = 40
     the_only_blob.color.r = randint(50,255)
     the_only_blob.color.g = randint(50,255)
     the_only_blob.color.b = randint(50,255)
@@ -130,7 +146,7 @@ function generate_our_zones(n) {
   newZones = []
   for (let i=0; i<n; i++) {
     newZones.push(
-      new EnergyZone(randint(100,400), randint(100,400), randint(10,100))
+      new EnergyZone(randint(100,400), randint(100,400), randint(30,50))
     )
   }
   return newZones
@@ -179,14 +195,21 @@ function reproduce(blob, all_blobs, threshold){
 }
 
 function step(blob, all_blobs, energyZones) {
+
+  blob_inputs = blob.getInputs(energyZones)
+
   reproduce(blob, all_blobs, 2000)
   blob.energy -= 1 // Living sucks man
 
-  if (blob.counter >= blob.instructions.length || blob.counter < 0) return;
+  if (blob.counter >= blob.instructions.length || blob.counter < 0) {
+    blob.counter = 0
+  }
 
   if (blob.energy <= 0) return;
 
   curr = blob.instructions[blob.counter]
+
+  blob.energy += energyDistribution(blob, energyZones)
 
   switch (curr[0]) {
     case NOP[0]: {}
@@ -208,7 +231,7 @@ function step(blob, all_blobs, energyZones) {
   }
   break;
   case CONVERT[0]: {
-    blob.energy += energyDistribution(blob, energyZones)
+    
   }
   break;
   case REPRODUCE[0]: {
@@ -285,7 +308,7 @@ function setup() {
   var canvas = createCanvas(AREA_RIGHT_MAX, AREA_DOWN_MAX);
   canvas.parent('canvas');
   all_blobs = generate_our_blobbly_boys()
-  energyZones = generate_our_zones(5)
+  energyZones = generate_our_zones(2)
 }
 
 function draw_blob(blob) {
@@ -334,7 +357,6 @@ function draw() {
 
   cycleCount += 1
   if (cycleCount > 100) {
-    cycleCount = 0
-    energyZones = generate_our_zones(5)
+    energyZones = generate_our_zones(2)
   }
 }

@@ -7,7 +7,7 @@ let AREA_LEFT_MAX = 0
 let AREA_RIGHT_MAX = 500
 let AREA_UP_MAX = 0
 let AREA_DOWN_MAX = 500
-let MAX_BLOBS = 1000
+let MAX_BLOBS = 2000
 //~~~~~~~~~~~~~~~~~//
 
 
@@ -17,10 +17,15 @@ let IN_ENERGY_ZONE = "IN_ENERGY_ZONE"
 let NONE = "NONE"
 let NEAR_OTHER_SIBLING_BLOB = "NEAR_OTHER_SIBLING_BLOB"
 let NEAR_EDGE_OF_SCREEN = "NEAR_EDGE_OF_SCREEN"
+let REMAIN_IN_ENERGY_ZONE = "REMAIN_IN_ENERGY_ZONE"
+let MOVED_INTO_ENERGY_ZONE = "MOVED_INTO_ENERGY_ZONE"
+let MOVED_OUT_OF_ENERGY_ZONE = "MOVED_OUT_OF_ENERGY_ZONE"
 
 let all_inputs = [
 IN_ENERGY_ZONE,
-NEAR_OTHER_SIBLING_BLOB,
+// MOVED_INTO_ENERGY_ZONE,
+// MOVED_OUT_OF_ENERGY_ZONE,
+// REMAIN_IN_ENERGY_ZONE,
 NONE
 ]
 // ===================
@@ -46,16 +51,16 @@ let TOP = ["TOP", 1]
 let REVERSE = ["REVERSE", 1]
 
 all_instructions = [
-UMOVE,
-DMOVE,
-LMOVE,
-RMOVE,
-CONVERT,
-REPRODUCE,
-NOP,
-DETECT,
-TOP,
-REVERSE
+    UMOVE,
+    DMOVE,
+    LMOVE,
+    RMOVE,
+    CONVERT,
+    REPRODUCE,
+    NOP,
+    DETECT,
+    TOP,
+    REVERSE
 ]
 
 // ===================
@@ -75,6 +80,8 @@ class Blob {
         this.ops = {}
         this.current = null
         this.counter = 0
+
+        this.prev_input = null
     }
 
     on(input, ops) { 
@@ -82,24 +89,26 @@ class Blob {
     }
 
     get_input(all_blobs, energy_zones) {
+
+        let in_energy_zone = false;
         for(let zone of energy_zones) {
             if (zone.contains(this.x, this.y)) return IN_ENERGY_ZONE;
         }
 
-        for(let other_blob of all_blobs) {
-            if(
-                this.color.r == other_blob.color.r &&
-                this.color.g == other_blob.color.g &&
-                this.color.b == other_blob.color.b &&
-                dist(other_blob.x, other_blob.y, this.x, this.y) < 10) {
-                return NEAR_OTHER_SIBLING_BLOB;
-            }
-        }
-
-        // if(AREA_RIGHT_MAX - this.x > 10) {
-        //     return NEAR_EDGE_OF_SCREEN;
+        // if(in_energy_zone) {
+        //     return IN_ENERGY_ZONE; // if(this.prev_input != IN_ENERGY_ZONE &&
+        //     //    this.prev_input != MOVED_INTO_ENERGY_ZONE) 
+        //     // {
+        //     //     return MOVED_INTO_ENERGY_ZONE;
+        //     // }
+        //     // if(this.prev_input == IN_ENERGY_ZONE || 
+        //     //     this.prev_input == MOVED_INTO_ENERGY_ZONE) 
+        //     // {
+        //     //     return REMAIN_IN_ENERGY_ZONE;
+        //     // }
+        // } else {
+        //     // if(this.prev_input == IN_ENERGY_ZONE) return MOVED_OUT_OF_ENERGY_ZONE;
         // }
-        
 
         return "NONE"
     }
@@ -121,7 +130,7 @@ class Blob {
 function generate_our_blobbly_boys() {
     all_new_blobby_boys = []
 
-    for(let i = 0; i < 5000; i++) {
+    for(let i = 0; i < 500; i++) {
         let new_blob = new Blob()
         new_blob.x = randint(AREA_LEFT_MAX, AREA_RIGHT_MAX)
         new_blob.y = randint(AREA_UP_MAX, AREA_DOWN_MAX)
@@ -247,6 +256,10 @@ function generate_our_zones(n) {
 // ===================
 
 function do_op(blob, op) {
+    if (op == undefined) {
+        return
+    }
+
     const op_name = op[0];
     const op_cost = op[1];
 
@@ -289,7 +302,7 @@ function step(blob, all_blobs, energy_zones) {
         blob.counter = 0
     }
 
-    if(blob.current && blob.current.length > 0) {
+    if(blob.current) {
         const op = blob.current[blob.counter]
         blob.counter += 1
         do_op(blob, op)
